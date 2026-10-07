@@ -13,6 +13,8 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
  <key>CFBundleExecutable</key><string>FinglishIME</string>
  <key>CFBundleIdentifier</key><string>org.finglishime.inputmethod.Finglish</string>
  <key>CFBundleName</key><string>Finglish</string>
+ <key>CFBundleDisplayName</key><string>Finglish</string>
+ <key>CFBundleDevelopmentRegion</key><string>en</string>
  <key>CFBundlePackageType</key><string>APPL</string>
  <key>CFBundleShortVersionString</key><string>1.0</string>
  <key>CFBundleVersion</key><string>1</string>
@@ -42,6 +44,13 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
  </dict>
 </dict></plist>
 PLIST
+# Display name of the input mode in System Settings / the input menu
+mkdir -p "$APP/Contents/Resources/en.lproj"
+cat > "$APP/Contents/Resources/en.lproj/InfoPlist.strings" <<'STR'
+"org.finglishime.inputmethod.Finglish.Persian" = "Finglish";
+CFBundleName = "Finglish";
+CFBundleDisplayName = "Finglish";
+STR
 codesign --force --deep -s - "$APP"
 if [ "$1" = "install" ]; then
   mkdir -p "$HOME/Library/Input Methods"

@@ -23,8 +23,9 @@ class FinglishInputController: IMKInputController {
         guard let event = event, event.type == .keyDown, let client = sender as? IMKTextInput else { return false }
         let composing = !buffer.isEmpty
 
+        // Shortcuts (⌘A, ⌘V, …): keep what was typed as plain Latin text and let the app handle the shortcut.
         if !event.modifierFlags.intersection([.command, .control, .option]).isEmpty {
-            if composing { commitSelected(client) }
+            if composing { commit(buffer, client) }
             return false
         }
         switch event.keyCode {

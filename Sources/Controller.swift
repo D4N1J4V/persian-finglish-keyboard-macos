@@ -8,6 +8,7 @@ var sharedCandidates: IMKCandidates!
 class FinglishInputController: IMKInputController {
     private var buffer = ""
     private var cands: [String] = []
+    private var highlighted: String?      // candidate the user moved to with the arrow keys
     private var pending: DispatchWorkItem?
 
     private let punctuation: [Character: String] = ["?": "؟", ",": "،", ";": "؛"]
@@ -68,6 +69,7 @@ class FinglishInputController: IMKInputController {
         pending?.cancel()
         if buffer.isEmpty { reset(client); return }
         cands = Engine.shared.localCandidates(for: buffer)
+        highlighted = nil
         client.setMarkedText(buffer, selectionRange: NSRange(location: buffer.utf16.count, length: 0), replacementRange: noRange)
         sharedCandidates.update()
         sharedCandidates.show()
@@ -78,6 +80,7 @@ class FinglishInputController: IMKInputController {
             Engine.shared.fetchGoogle(word) { [weak self] words in
                 guard let self, self.buffer == word else { return }   // user kept typing: drop stale answer
                 self.cands = Engine.shared.merged(google: words, for: word)
+                self.highlighted = nil
                 sharedCandidates.update()
             }
         }
@@ -88,7 +91,7 @@ class FinglishInputController: IMKInputController {
     private func reset(_ client: IMKTextInput?) {
         pending?.cancel(); Engine.shared.cancelFetch()
         client?.setMarkedText("", selectionRange: NSRange(location: 0, length: 0), replacementRange: noRange)
-        buffer = ""; cands = []
+        buffer = ""; cands = []; highlighted = nil
         sharedCandidates?.hide()
     }
 
@@ -101,13 +104,18 @@ class FinglishInputController: IMKInputController {
     }
 
     private func commitSelected(_ client: IMKTextInput) {
-        let picked = sharedCandidates.selectedCandidateString()?.string
+        let picked = highlighted ?? sharedCandidates.selectedCandidateString()?.string
         commit(picked.flatMap { cands.contains($0) ? $0 : nil } ?? cands.first ?? buffer, client)
     }
 
     // MARK: IMKInputController overrides
 
     override func candidates(_ sender: Any!) -> [Any]! { cands }
+
+    /// Called by the candidate panel whenever the highlighted candidate changes (arrow keys, Tab, mouse).
+    override func candidateSelectionChanged(_ candidateString: NSAttributedString!) {
+        highlighted = candidateString?.string
+    }
 
     override func candidateSelected(_ candidateString: NSAttributedString!) {
         if let client = client() { commit(candidateString.string, client) }

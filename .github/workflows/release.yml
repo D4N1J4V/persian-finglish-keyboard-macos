@@ -1,0 +1,46 @@
+name: Release
+
+# Builds the app from this source on GitHub's own macOS runner and publishes it as a release
+# whenever a tag like v1.0.0 is pushed.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: ./build.sh
+
+      - name: Package
+        run: |
+          ZIP="FinglishIME-${GITHUB_REF_NAME}-macos-arm64.zip"
+          ditto -c -k --keepParent --norsrc --noextattr --noqtn build/FinglishIME.app "$ZIP"
+          shasum -a 256 "$ZIP" > "$ZIP.sha256"
+          echo "ZIP=$ZIP" >> "$GITHUB_ENV"
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cat > notes.md <<'NOTES'
+          Persian (Finglish) phonetic input method for macOS. **Apple Silicon only.**
+          Built from the tagged source by GitHub Actions; verify the download with the `.sha256` file.
+
+          The app is ad-hoc signed (no paid Apple developer account), so macOS blocks it the first time:
+
+          ```bash
+          mv FinglishIME.app ~/Library/Input\ Methods/
+          xattr -dr com.apple.quarantine ~/Library/Input\ Methods/FinglishIME.app
+          ```
+
+          Then log out and back in and add it in System Settings > Keyboard > Input Sources > Persian > Finglish.
+          NOTES
+          gh release create "$GITHUB_REF_NAME" "$ZIP" "$ZIP.sha256" \
+            --title "Finglish IME $GITHUB_REF_NAME" --notes-file notes.md

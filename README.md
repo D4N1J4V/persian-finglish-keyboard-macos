@@ -28,7 +28,24 @@ system input source you switch on and off from the menu bar.
 
 The last candidate is always the text you typed, unchanged.
 
-## Install
+## Download (Apple Silicon)
+
+Prefer not to build it? Download `FinglishIME-<version>-macos-arm64.zip` from the
+[Releases](../../releases) page (Apple Silicon only; on Intel Macs build from source, see below).
+It is built from the tagged source by GitHub Actions; compare its SHA-256 with the `.sha256` file next to it.
+
+The app is only ad-hoc signed (no paid Apple developer account), so macOS blocks it the first time.
+Unzip it, then:
+
+```bash
+mv FinglishIME.app ~/Library/Input\ Methods/
+xattr -dr com.apple.quarantine ~/Library/Input\ Methods/FinglishIME.app
+```
+
+Log out and back in, then add it in **System Settings → Keyboard → Input Sources → Persian → Finglish**.
+If you would rather not trust a binary, build it yourself.
+
+## Build and install from source
 
 Requires macOS and the Xcode Command Line Tools (`xcode-select --install`).
 

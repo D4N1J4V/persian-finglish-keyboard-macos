@@ -4,7 +4,7 @@ set -e
 cd "$(dirname "$0")"
 APP=build/FinglishIME.app
 rm -rf "$APP"; mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
-swiftc -swift-version 5 -O Sources/*.swift -o "$APP/Contents/MacOS/FinglishIME" -framework Cocoa -framework InputMethodKit -framework Carbon
+swiftc -swift-version 5 -O -file-prefix-map "$PWD=." Sources/*.swift -o "$APP/Contents/MacOS/FinglishIME" -framework Cocoa -framework InputMethodKit -framework Carbon
 swiftc make_icon.swift -o build/make_icon && build/make_icon "$APP/Contents/Resources/icon.tiff"
 cat > "$APP/Contents/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
